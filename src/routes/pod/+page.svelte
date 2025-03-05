@@ -9,8 +9,8 @@
   let isLoading: boolean = true;
   let error: string | null = null;
 
-  const apiKey = "q6yp2lBh91cDDuJXqQa1b2hnafvin1Rgh1ukZXeg";
-  const apiUrl = `https://api.nasa.gov/planetary/apod?api_key=${apiKey}`;
+  const API_KEY = import.meta.env.VITE_NASA_API_KEY;
+  const apiUrl = `https://api.nasa.gov/planetary/apod?api_key=${API_KEY}`;
 
   onMount(async () => {
     try {

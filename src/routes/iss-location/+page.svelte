@@ -1,159 +1,105 @@
 <script lang="ts">
-  import Navbar from '../components/Navbar.svelte';
   import { onMount } from 'svelte';
-
-  // Definisi tipe untuk respons API ISS
-  interface ISSResponse {
-    iss_position: {
-      latitude: string;
-      longitude: string;
-    };
-    timestamp: number;
-    message: string;
-  }
-
+  import Navbar from '../components/Navbar.svelte';
+  
+  let mapElement: HTMLDivElement;
+  let map: any;
+  let issMarker: any;
   let latitude = 0;
   let longitude = 0;
-  let spacekit: any;
-  let simulation: any;
-  let earth: any;
-  let issObject: any;
-  let initialized = false;
-
-  // Fungsi untuk mengkonversi koordinat lat/long ke posisi kartesian
-  function latLongToCartesian(latitude: number, longitude: number, radius: number = 1): [number, number, number] {
-    const latRad = (latitude * Math.PI) / 180;
-    const longRad = (longitude * Math.PI) / 180;
-
-    const x = radius * Math.cos(latRad) * Math.cos(longRad);
-    const y = radius * Math.sin(latRad);
-    const z = radius * Math.cos(latRad) * Math.sin(longRad);
-
-    return [x, y, z];
-  }
+  let lastUpdateTime = '';
 
   async function fetchISSLocation(): Promise<void> {
     try {
       const response = await fetch('http://api.open-notify.org/iss-now.json');
-      const data: ISSResponse = await response.json();
+      const data = await response.json();
+      
       latitude = parseFloat(data.iss_position.latitude);
       longitude = parseFloat(data.iss_position.longitude);
-
-      if (initialized && issObject) {
-        const position = latLongToCartesian(latitude, longitude, 1.02);
-        issObject.getObject().position.set(position[0], position[1], position[2]);
+      
+      if (map && issMarker) {
+        issMarker.setLatLng([latitude, longitude]);
+        map.setView([latitude, longitude], map.getZoom());
       }
+      
+      lastUpdateTime = new Date().toLocaleTimeString();
     } catch (error) {
       console.error('Error fetching ISS location:', error);
     }
   }
 
   onMount(async () => {
-    // Pastikan kode hanya dijalankan di browser
-    if (typeof window !== 'undefined') {
-      try {
-        // Import Spacekit secara dinamis
-        const spacekitModule = await import('https://typpo.github.io/spacekit/build/spacekit.js');
-        spacekit = spacekitModule;
-        console.log('Spacekit loaded:', spacekit);
+    
+    const L = await import('leaflet');
+    await import('leaflet/dist/leaflet.css');
 
-        // Siapkan container
-        const container = document.getElementById('map');
-        if (!container) {
-          console.error('Container element not found');
-          return;
-        }
-
-        // Buat simulasi baru
-        simulation = new spacekit.Simulation(container, {
-          basePath: 'https://typpo.github.io/spacekit', // Pastikan basePath valid
-          startDate: new Date(),
-          startPaused: false,
-          debug: {
-            showAxes: true, // Aktifkan debug axes untuk memeriksa orientasi
-            showGrid: true, // Aktifkan debug grid untuk memeriksa posisi
-          },
-        });
-
-        // Tambahkan bumi
-        earth = simulation.createObject('earth', {
-          labelText: 'Earth',
-          ephem: new spacekit.EphemerisTable({
-            entries: [{
-              jd: 0,
-              position: [0, 0, 0],
-            }],
-          }),
-          atmosphere: true,
-        });
-        console.log('Earth created:', earth);
-
-        // Atur skybox
-        simulation.createSkybox(spacekit.SkyboxPresets.NASA_TYCHO);
-        console.log('Skybox created');
-
-        // Tambahkan bintang
-        simulation.createStars();
-        console.log('Stars created');
-
-        // Atur kamera
-        const viewer = simulation.getViewer();
-        viewer.setCameraPosition([0, 0, 3]); // Posisi kamera di atas Bumi
-        console.log('Camera position set');
-
-        // Buat objek untuk ISS
-        issObject = simulation.createObject('iss', {
-          labelText: 'ISS',
-          ephem: new spacekit.EphemerisTable({
-            entries: [{
-              jd: 0,
-              position: [1.02, 0, 0], // Posisi awal ISS
-            }],
-          }),
-          theme: {
-            color: 0xff0000, // Warna merah untuk ISS
-            markerSize: 10,
-          },
-        });
-        console.log('ISS object created:', issObject);
-
-        // Inisialisasi sukses
-        initialized = true;
-
-        // Ambil lokasi ISS dan perbarui posisi
-        await fetchISSLocation();
-
-        // Perbarui posisi setiap 5 detik
-        const interval = setInterval(fetchISSLocation, 5000);
-
-        // Bersihkan interval saat komponen di-unmount
-        return () => clearInterval(interval);
-      } catch (error) {
-        console.error('Error initializing Spacekit:', error);
-      }
-    }
+    
+    map = L.map(mapElement).setView([0, 0], 3);
+    
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(map);
+    
+    const issIcon = L.divIcon({
+      className: 'custom-iss-icon',
+      html: `
+       <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"><path fill="#fff" d="M15.5 19v2h-1.77c-.34.6-.99 1-1.73 1s-1.39-.4-1.73-1H8.5v-2h1.77c.17-.3.43-.56.73-.73V17h-1c-.55 0-1-.45-1-1v-3H6v4c0 .55-.45 1-1 1H3c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1h2c.55 0 1 .45 1 1v3h3V8c0-.55.45-1 1-1h1V6h-1c-.55 0-1-.45-1-1V4c0-.55.45-1 1-1h4c.55 0 1 .45 1 1v1c0 .55-.45 1-1 1h-1v1h1c.55 0 1 .45 1 1v3h3V8c0-.55.45-1 1-1h2c.55 0 1 .45 1 1v9c0 .55-.45 1-1 1h-2c-.55 0-1-.45-1-1v-4h-3v3c0 .55-.45 1-1 1h-1v1.27c.3.17.56.43.73.73zM3 16v1h2v-1zm0-2v1h2v-1zm0-2v1h2v-1zm0-2v1h2v-1zm0-2v1h2V8zm16 8v1h2v-1zm0-2v1h2v-1zm0-2v1h2v-1zm0-2v1h2v-1zm0-2v1h2V8z"/></svg>
+      `,
+      iconSize: [30, 30],
+      iconAnchor: [15, 15]
+    });
+    
+    
+    issMarker = L.marker([latitude, longitude], {icon: issIcon}).addTo(map);
+    
+    
+    await fetchISSLocation();
+    
+    // Update lokasi setiap 5 detik
+    const interval = setInterval(fetchISSLocation, 5000);
+    
+    return () => clearInterval(interval);
   });
 </script>
 
-<style>
-  #map {
-    width: 100%;
-    height: 500px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    background-color: #000;
-    position: relative;
-    overflow: hidden;
-  }
-</style>
-
 <Navbar />
-<div class="m-auto max-w-2xl flex flex-col items-center">
-  <h1 class="text-4xl">ISS Live Location</h1>
-  <div id="map" class="w-full h-96 rounded-lg m-auto"></div>
-  <div class="flex justify-evenly bg-black/50 backdrop-blur-sm rounded-b-lg w-full text-white font-semibold">
-    <p>Lintang: {latitude.toFixed(6)}°</p>
-    <p>Bujur: {longitude.toFixed(6)}°</p>
+
+
+<div class="container mx-auto px-4 py-6 max-w-4xl" >
+  
+  <div class="text-center mb-4">
+    <h1 class="text-2xl  font-bold text-white">ISS Live Location</h1>
   </div>
-  <p class="text-sm text-gray-400">Data diperbarui setiap 5 detik</p>
+
+  <div class="bg-white rounded-xl shadow-md overflow-hidden">
+    <div id="map" style="height: 300px;" bind:this={mapElement}></div>
+    
+    <div class="grid grid-cols-3 divide-x bg-gray-100 p-2">
+      <div class="text-center">
+        <span class="text-xs text-gray-600">Latitude</span>
+        <p class="font-semibold">{latitude.toFixed(4)}°</p>
+      </div>
+      <div class="text-center">
+        <span class="text-xs text-gray-600">Longitude</span>
+        <p class="font-semibold">{longitude.toFixed(4)}°</p>
+      </div>
+      <div class="text-center">
+        <span class="text-xs text-gray-600">Updated</span>
+        <p class="font-semibold">{lastUpdateTime}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center mt-4">
+    <p class="text-gray-600 text-sm">updated every five seconds</p>
+    <a 
+      href="https://www.nasa.gov/mission_pages/station/main/index.html" 
+      target="_blank" 
+      rel="noopener noreferrer"
+      class="text-sm text-blue-600 hover:underline"
+    >
+      More Information from NASA
+    </a>
+  </div>
 </div>
