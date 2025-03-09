@@ -28,7 +28,7 @@
     }
   }
 
-  onMount(async () => {
+  onMount(async () =>{
     
     const L = await import('leaflet');
     await import('leaflet/dist/leaflet.css');
@@ -63,43 +63,44 @@
   });
 </script>
 
-<Navbar />
 
-
-<div class="container mx-auto px-4 py-6 max-w-4xl" >
-  
-  <div class="text-center mb-4">
-    <h1 class="text-2xl  font-bold text-white">ISS Live Location</h1>
-  </div>
-
-  <div class="bg-white rounded-xl shadow-md overflow-hidden">
-    <div id="map" style="height: 300px;" bind:this={mapElement}></div>
+<main class=" mx-auto h-screen font-sans bg-no-repeat bg-cover bg-center" style="background-image: url('/iss_bg.png');" >
+  <Navbar />
+  <section class="container mx-auto px-4 max-w-4xl" >
     
-    <div class="grid grid-cols-3 divide-x bg-gray-100 p-2">
-      <div class="text-center">
-        <span class="text-xs text-gray-600">Latitude</span>
-        <p class="font-semibold">{latitude.toFixed(4)}°</p>
-      </div>
-      <div class="text-center">
-        <span class="text-xs text-gray-600">Longitude</span>
-        <p class="font-semibold">{longitude.toFixed(4)}°</p>
-      </div>
-      <div class="text-center">
-        <span class="text-xs text-gray-600">Updated</span>
-        <p class="font-semibold">{lastUpdateTime}</p>
+    <div class="text-center mb-4">
+      <h1 class="text-4xl  font-bold text-white">ISS Live Location</h1>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+      <div id="map" style="height: 300px;" bind:this={mapElement}></div>
+      
+      <div class="grid grid-cols-3 divide-x bg-gray-100 p-2">
+        <div class="text-center">
+          <span class="text-xs text-gray-600">Latitude</span>
+          <p class="font-semibold">{latitude.toFixed(4)}°</p>
+        </div>
+        <div class="text-center">
+          <span class="text-xs text-gray-600">Longitude</span>
+          <p class="font-semibold">{longitude.toFixed(4)}°</p>
+        </div>
+        <div class="text-center">
+          <span class="text-xs text-gray-600">Updated</span>
+          <p class="font-semibold">{lastUpdateTime}</p>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="text-center mt-4">
-    <p class="text-gray-600 text-sm">updated every five seconds</p>
-    <a 
-      href="https://www.nasa.gov/mission_pages/station/main/index.html" 
-      target="_blank" 
-      rel="noopener noreferrer"
-      class="text-sm text-blue-600 hover:underline"
-    >
-      More Information from NASA
-    </a>
-  </div>
-</div>
+    <div class="text-center mt-4">
+      <p class="text-gray-600 text-sm">updated every five seconds</p>
+      <a 
+        href="https://www.nasa.gov/mission_pages/station/main/index.html" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        class="text-sm text-blue-600 hover:underline"
+      >
+        More Information from NASA
+      </a>
+    </div>
+  </section>
+</main>
