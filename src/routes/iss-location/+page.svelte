@@ -10,31 +10,24 @@
   let lastUpdateTime = '';
 
   async function fetchISSLocation(): Promise<void> {
-  try {
-    const corsProxyUrl = "https://corsproxy.io/?";
-    const issApiUrl = "http://api.open-notify.org/iss-now.json";
-    
-    const response = await fetch(`${corsProxyUrl}${encodeURIComponent(issApiUrl)}`);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+    try {
+      const response = await fetch('https://api.wheretheiss.at/v1/satellites/25544');
+      const data = await response.json();
+      
+      latitude = parseFloat(data.latitude);
+      longitude = parseFloat(data.longitude);
+      
+      if (map && issMarker) {
+        issMarker.setLatLng([latitude, longitude]);
+        map.setView([latitude, longitude], map.getZoom());
+      }
+      
+      lastUpdateTime = new Date().toLocaleTimeString();
+    } catch (error) {
+      console.error('Error fetching ISS location:', error);
     }
-    
-    const data = await response.json();
-    
-    latitude = parseFloat(data.iss_position.latitude);
-    longitude = parseFloat(data.iss_position.longitude);
-    
-    if (map && issMarker) {
-      issMarker.setLatLng([latitude, longitude]);
-      map.setView([latitude, longitude], map.getZoom());
-    }
-    
-    lastUpdateTime = new Date().toLocaleTimeString();
-  } catch (error) {
-    console.error('Error fetching ISS location:', error);
   }
-}
+
   onMount(async ():Promise<void> =>{
     
     const L = await import('leaflet');
