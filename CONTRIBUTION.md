@@ -76,6 +76,13 @@ Open an issue with:
 
 ---
 
+## 🧾 Code of Conduct
+
+We follow the [Contributor Covenant](https://www.contributor-covenant.org/).
+Be respectful. Be kind. Space is vast — no need for ego collisions.
+
+---
+
 > “Collaboration is the engine of exploration — every contribution expands our horizon.”
 
 
