@@ -1,4 +1,54 @@
-# sv
+# Space Info 🚀
+
+**Space Info** is an open source project for space enthusiasts, astronomers, and anyone curious about what’s happening beyond Earth.  
+It provides reliable, up-to-date information on rocket launches, celestial events, and discoveries from across the cosmos.
+
+## 🌌 Overview
+Space Info connects data from space agencies, observatories, and independent astronomy communities to create a unified source for:
+- **Launch Schedules:** Upcoming and past rocket launches from major agencies and private companies.  
+- **ISS Location:** Display accurate iss data with trusted open source api.
+- **Mars Weather:** Displays the current weather on Mars.  
+- **Educational Resources:** Articles, charts, and analysis to help everyone understand space better.
+Home
+
+## 🧭 Roadmap
+- [ ] Real-time launch tracking with API integration  
+- [ ] Global sky event calendar  
+- [ ] Dark mode optimized for telescopic use  
+- [ ] User-generated observation data  
+- [ ] Integration with open-source satellite tracking tools  
+
+## 🧑‍🚀 Getting Started
+To run Space Info locally:
+
+```bash
+# Clone the repository
+git clone https://github.com/kevinalfito69/space-info.git
+
+# Move into the project folder
+cd space-info
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm run dev
+````
+
+Then open your browser and visit:
+👉 `http://localhost:3000`
+
+## 🤝 Contributing
+
+We welcome all forms of contribution — whether it’s fixing bugs, adding event data, or improving documentation.
+Please read [`CONTRIB.md`](./CONTRIB.md) before submitting pull requests.
+
+
+> “Exploration knows no bounds — only curiosity defines the horizon.”
+
+
+
+# Development
 
 Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
 
